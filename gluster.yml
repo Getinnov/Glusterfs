@@ -1,0 +1,66 @@
+version: '3.8'       
+
+x-default-opts:      
+  &default-opts      
+  logging:
+    options:
+      max-size: "1m" 
+
+services:
+  main_gluster:      
+    <<: *default-opts
+    image: docker    
+    command: sh -c " 
+      docker network create -d overlay --attachable gluster_internal;
+      docker pull {your_registry}/main_gluster;
+      docker run
+      --restart=always
+      --name g1
+      -v /srv/gluster_volume:/gv0
+      --mount type=bind,source=/root/DATA,target=/data,bind-propagation=rshared
+      -d
+      --privileged=true
+      --net=gluster_internal
+      {your_registry}/main_gluster && exit"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - 'node.role == manager'
+          - 'node.platform.os == linux'
+          - 'node.labels.db==main'
+
+  save_gluster:
+    <<: *default-opts
+    image: docker
+    command: sh -c "
+      mkdir -p /root/DATA;
+      docker pull {your_registry}/main_gluster;
+      docker run
+      --restart=always
+      --name g2
+      -v /srv/gluster_volume:/gv0
+      --mount type=bind,source=/root/DATA,target=/data,bind-propagation=rshared
+      -d
+      --privileged=true
+      --net=gluster_internal
+      {your_registry}/save_gluster && exit"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - 'node.role == worker'
+          - 'node.platform.os == linux'
+          - 'node.labels.db==save'
