@@ -2,12 +2,12 @@ version: "3.8"
 
 services:
   builder_m_gluster:
-    image: {your_repo}/main_gluster
+    image: {your_registry}/main_gluster
     build:
       context: .
       dockerfile: Dockerfile-main_gluster
   builder_s_gluster:
-    image: {your_repo}/save_gluster
+    image: {your_registry}/save_gluster
     build:
       context: .
       dockerfile: Dockerfile-save_gluster
