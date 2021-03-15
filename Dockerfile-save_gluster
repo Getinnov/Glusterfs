@@ -1,0 +1,13 @@
+FROM debian:10
+
+RUN apt update
+RUN apt install glusterfs-server -y   
+RUN apt install samba -y
+
+ENTRYPOINT bash -c  '\
+ glusterd -N --log-file=/dev/stdout &\
+ sleep 60;\
+ mount.glusterfs g2:/gv0 /data;\      
+ while true; do\
+   sleep 1000;\
+ done'
