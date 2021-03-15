@@ -1,0 +1,19 @@
+FROM debian:10
+
+RUN apt update
+RUN apt install glusterfs-server -y
+RUN apt install samba -y
+
+ENTRYPOINT bash -c  '\
+  glusterd -N --log-file=/dev/stdout &\
+  sleep 30;\
+  gluster peer probe g2;\
+  gluster volume create gv0 replica 2 g1:/gv0 g2:/gv0 force;\
+  gluster volume start gv0;\
+  mkdir swap_gluster;\
+  cp -R /data/* /swap_gluster;\
+  mount.glusterfs g1:/gv0 /data;\
+  mv /swap_gluster/*  /data;\
+  while true; do\
+    sleep 1000;\
+  done'
