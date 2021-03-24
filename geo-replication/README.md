@@ -5,7 +5,7 @@ Simple example setting up *glusterfs geo-replication* on *Debian 10*
 
 ### host1
 ```bash
-apt-get install gluster -y
+apt-get install glusterfs-server -y
 apt-get install samba -y
 apt-get install rsync -y
 gluster volume create vol1 node1.xxxxx.xx:/srv/gluster_data/vol1 force
